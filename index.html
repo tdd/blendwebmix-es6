@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="fr">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Deep-dive dans ES6</title>
+
+		<meta name="description" content="Une session à Blend Web Mix 2015">
+		<meta name="author" content="Christophe Porteneuve">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link href='https://fonts.googleapis.com/css?family=Merriweather:700|Source+Sans+Pro:300,600,300italic,600italic|Source+Code+Pro:400,600' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/animate.min.css">
+		<link rel="stylesheet" href="css/theme/sky.css" id="theme-basis">
+		<link rel="stylesheet" href="css/theme/pw15.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/tomorrow.css">
+
+		<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+		<script>
+			if( window.location.search.match( /print-pdf/gi ) ) {
+				var link = document.createElement( 'link' );
+				link.rel = 'stylesheet';
+				link.type = 'text/css';
+				link.href = 'css/print/pdf.css';
+				document.getElementsByTagName( 'head' )[0].appendChild( link );
+			}
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-43650325-8', 'auto');
+      ga('require', 'linkid');
+      ga('send', 'pageview');
+    </script>
+	</head>
+
+	<body id="prioFix">
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section>
+					<h1>Deep-dive dans ES6</h1>
+					<p>
+						<small>Une présentation de <a href="http://tddsworld.com/">Christophe Porteneuve</a> à <a href="www.blendwebmix.com/programme/deep-dive-dans-es6.html">Blend Web Mix 2015</a></small>
+					</p>
+				</section>
+
+				<section id="whoami">
+					<h2>Tékitoa</h2>
+
+					<pre><code data-trim class="javascript">
+var christophe = {
+  age:        37.98015058179329,
+  city:       'Paris',
+  company:    'Delicious Insights',
+  trainings:  ['JS Total', 'Node.js', 'Git Total'],
+  webSince:   1995,
+  claimsToFame: [
+    'Prototype.js',
+    'Ruby On Rails',
+    'Bien Développer pour le Web 2.0',
+    'Prototype and Script.aculo.us',
+    'Paris Web'
+  ]
+};
+          </code></pre>
+				</section>
+
+        <section data-state="theme-color-silver-green">
+					<section id="now-really">
+						<h1>Déjà ?!</h1>
+            <h3>Je fais même pas encore de l’ES5, moi…</h3>
+					</section>
+
+          <section id="yes-now-really">
+            <h2>Oui, mais c’est pas grave</h2>
+
+            <p>Parce que</p>
+
+            <a href="http://babeljs.io/"><img src="images/babel-logo.svg" alt="Logo de Babel" width="80%"></a>
+          </section>
+
+          <section id="babel">
+            <h2>Babel (né 6to5)</h2>
+
+            <p>Transpile ES6+<sup>1</sup> (ES6, ES7…) en <strong>ES5</strong></p>
+            <p>Du coup, si tu as ES5, tu peux y aller</p>
+            <p>En pratique : IE9+, tous navigateurs modernes, Node.js</p>
+            <p>Intégré avec <a href="http://babeljs.io/docs/setup/"><strong>l’univers</strong></a></p>
+
+            <footer><sup>1</sup> Quasi tout… mais pas complètement tout.</footer>
+          </section>
+
+          <section id="why-es6">
+            <h2>ES6, pourquoi ?</h2>
+
+            <p>Plus <strong>facile</strong></p>
+            <p>Plus <strong>puissant</strong></p>
+            <p>Plus <strong>fiable</strong></p>
+            <p>Plus <strong>performant</strong></p>
+            <h3 class="fragment breathing">Plus <strong>kiffant</strong></h3>
+          </section>
+
+          <section id="agenda">
+            <h2>Aujourd’hui…</h2>
+            <h4>on va regarder ES6 dans son habitat naturel</h4>
+
+            <p>Parce que juste sortir des exemples Toto / Tutu, ça empêche de vraiment intérioriser le potentiel du bestiau.</p>
+
+            <p>Véritable codebase : <a href="https://github.com/rackt/redux/tree/master/examples/todomvc">l’exemple TodoMVC de Redux</a></p>
+
+            <p>Quelques démos isolées lorsqu’on n’avait pas d’exemple adapté dans cette codebase.</p>
+
+            <p>On ne verra pas <strong>tout</strong> : certains trucs sont anecdotiques ou très, très expérimentaux.  Mais ça devrait bien couvrir le truc.</p>
+          </section>
+				</section> <!-- #now-really -->
+
+        <section data-state="theme-color-blue-yellow">
+          <section id="objects-and-classes">
+            <h1>Objets &amp; Classes</h1>
+            <h3>Là c’est grave plus simple</h3>
+          </section>
+
+          <section id="object-literals">
+            <h2>Litéraux objets</h2>
+
+            <pre><code class="js" data-trim data-noescape data-path="actions/todo.js (lignes 11–13)">
+function editTodo(id, text) {
+  return { type: types.EDIT_TODO<u>, id, text</u> };
+}
+            </code></pre>
+
+            <pre><code class="js" data-trim data-noescape data-path="components/Footer.js (lignes 5–9)">
+FILTER_TITLES = {
+  <u>[SHOW_ALL]</u>: 'All',
+  <u>[SHOW_ACTIVE]</u>: 'Active',
+  <u>[SHOW_COMPLETED]</u>: 'Completed'
+};
+            </code></pre>
+            <footer><a href="http://babeljs.io/docs/learn-es2015/#enhanced-object-literals">Détails</a></footer>
+          </section>
+
+          <section id="classes">
+            <h2>Classes</h2>
+
+            <pre><code class="js" data-trim data-noescape data-path="components/TodoItem.js (lignes 5–15)">
+<u>class</u> TodoItem <u>extends</u> Component {
+  <u>constructor</u>(props, context) {
+    <u>super</u>(props, context);
+    this.state = {
+      editing: false
+    };
+  }
+
+  <u>handleDoubleClick()</u> {
+    this.setState({ editing: true });
+  }
+  …
+}
+            </code></pre>
+            <footer><a href="http://babeljs.io/docs/learn-es2015/#classes">Détails</a></footer>
+          </section>
+        </section> <!-- #objects-and-classes -->
+
+				<section data-state="theme-color-forest-yellow">
+          <section id="greater-comfort">
+            <h1>Un confort énorme</h1>
+            <h3>sur plein de petits trucs</h3>
+          </section>
+
+          <section id="destructuring">
+            <h2>Déstructuration</h2>
+
+            <pre><code class="js" data-trim data-noescape data-path="components/Footer.js (lignes 13, 25)">
+const <u>{ activeCount } =</u> this.props;
+…
+const { filter<u>: selectedFilter</u>, onShow } = this.props;
+            </code></pre>
+
+            <pre><code class="js" data-trim data-noescape data-path="test/components/Footer.spec.js (lignes 80, 88)">
+const <u>[, filters] =</u> output.props.children;
+…
+const <u>[,, clear] =</u> output.props.children;
+            </code></pre>
+
+            <pre><code class="js" data-trim data-noescape>
+var { op: a, lhs<u>: { op: b }</u>, rhs: c } = getASTNode();
+            </code></pre>
+            <footer><a href="http://babeljs.io/docs/learn-es2015/#destructuring">Détails</a></footer>
+          </section>
+
+          <section id="rest-spread">
+            <h2>Rest &amp; Spread</h2>
+
+            <pre><code class="js" data-trim data-noescape>
+function winners(first, runnerUp, <u>...others</u>) {
+  console.log(first, runnerUp, others);
+}
+winners('alice', 'bob', 'claire', 'david')
+// => 'alice', 'bob', <u>['claire', 'david']</u>
+
+var arr1 = ['one', 'two'], arr2 = ['three', 'four'];
+arr1.push(<u>...arr2</u>) // => 4
+arr1                // => ['one', 'two', 'three', 'four']
+
+var defaults = { first: 'John', last: 'Doe', age: 42 };
+var trainer  = { last: 'Smith', age: 35 };
+trainer      = { <u>...defaults</u>, <u>...trainer</u>, age: 36 }
+// => { first: 'John', last: 'Smith', age: 36 }
+            </code></pre>
+
+            <pre><code class="js" data-trim data-noescape data-path="reducers/todos.js (lignes 12–16, reformatées)">
+return <u>[</u>{ id: …, completed: …, text: … }<u>, ...state]</u>;
+            </code></pre>
+
+            <pre><code class="js" data-trim data-noescape data-path="components/MainSection.js (JSX ; ligne 72)">
+&lt;TodoItem key={todo.id} todo={todo} {<u>...actions</u>} /&gt;
+            </code></pre>
+
+            <footer>
+              Détails <a href="http://babeljs.io/docs/learn-es2015/#default-rest-spread">ES6</a>
+              et <a href="https://github.com/sebmarkbage/ecmascript-rest-spread#readme">ES7</a>
+            </footer>
+          </section>
+
+          <section id="defaults">
+            <h2>Valeurs par défaut</h2>
+
+            <pre><code class="js" data-trim data-noescape data-path="reducers/todos.js (ligne 9)">
+function todos(state<u> = initialState</u>, action) {
+  …
+}
+            </code></pre>
+
+            <pre><code class="js" data-trim data-noescape>
+var [first, second<u> = 'foo'</u>] = ['yo'];
+// second === 'foo'
+
+var person = { first: 'Louis', sex: 'M', age: 36 };
+var { first, last<u> = 'Doe'</u>, age<u> = 42</u> } = person;
+// first === 'Louis', last === 'Doe', age === 36
+            </code></pre>
+            <footer><a href="http://babeljs.io/docs/learn-es2015/#default-rest-spread">Détails</a></footer>
+          </section>
+
+          <section id="template-strings">
+            <h2>Template strings</h2>
+
+            <pre><code class="js" data-trim data-noescape>
+var person = { first: 'Thomas', last: 'Anderson', age: 25, nickname: 'Neo' };
+
+// Interpolation de JS quelconque
+console.log(`<u>${person.first}</u> aka <u>${person.nickname}</u>`)
+// => 'Thomas aka Neo'
+
+// Multi-ligne !
+var markup = <u>`</u>&lt;li&gt;
+  ${person.first} ${person.last}, age ${person.age}
+&lt;/li&gt;<u>`</u>;
+
+// Tagged template strings
+function <u>html(statics, ...exprs)</u> {
+  return statics.reduce(function(acc, text, index) {
+    return acc + text + (exprs[index] || '').replace(/&lt;/g, '&amp;lt;');
+  }, '').join('');
+}
+
+var user = '&lt;script&gt;', comment = '&lt;bgsound&gt;';
+<u>html`</u>&lt;li&gt;${user}: &lt;blockquote&gt;${comment}&lt;/blockquote&gt;&lt;/li&gt;<u>`</u>
+// => '&lt;li&gt;<u>&amp;lt;</u>script&gt;: &lt;blockquote&gt;<u>&amp;lt;</u>bgsound&gt;&lt;/blockquote&gt;&lt;/li&gt;'
+            </code></pre>
+
+            <footer><a href="http://babeljs.io/docs/learn-es2015/#template-strings">Détails</a></footer>
+          </section>
+
+          <section id="arrow-functions">
+            <h2>Fonctions fléchées &amp; <code>this</code> lexical</h2>
+
+            <pre><code class="js" data-trim data-noescape data-path="components/TodoItem.js (ligne 34)">
+onSave={<u>(text) => this.handleSave(todo.id, text)</u>} />
+            </code></pre>
+
+            <pre><code class="js" data-trim data-noescape data-path="components/MainSection.js (lignes 6–10, 19)">
+TODO_FILTERS = {
+  [SHOW_ALL]: <u>() => true</u>,
+  [SHOW_ACTIVE]: <u>todo => !todo.completed</u>,
+  [SHOW_COMPLETED]: <u>todo => todo.completed</u>
+};
+…
+atLeastOneCompleted = this.props.todos.some(<u>todo => todo.completed</u>);
+            </code></pre>
+
+            <footer><a href="http://babeljs.io/docs/learn-es2015/#arrows-and-lexical-this">Détails</a></footer>
+          </section>
+
+          <section id="let-const">
+            <h2><code>let</code> &amp; <code>const</code></h2>
+
+            <pre><code class="js" data-trim data-noescape data-path="components/Footer.js (lignes 13, 25)">
+<u>const</u> { activeCount } = this.props;
+…
+<u>const</u> { filter: selectedFilter, onShow } = this.props;
+            </code></pre>
+
+            <pre><code class="js" data-trim data-noescape data-path="constants/ActionTypes.js (lignes 1–3 modifiées)">
+<u>const</u> ADD_TODO = 'ADD_TODO';
+<u>const</u> DELETE_TODO = 'DELETE_TODO';
+<u>const</u> EDIT_TODO = 'EDIT_TODO';
+            </code></pre>
+
+            <pre><code class="js" data-trim data-noescape>
+for (<u>let</u> index = 0; index &lt; 10; ++index)
+  setTimeout(() => console.log(index), 10);
+// => Effectivement de 0 à 9, pas 10 x 10, malgré l’asynchrone
+            </code></pre>
+
+            <footer><a href="http://babeljs.io/docs/learn-es2015/#let-const">Détails</a></footer>
+          </section>
+
+          <section id="octal-and-binary">
+            <h2>Litéraux octaux &amp; binaires</h2>
+
+            <pre><code class="js" data-trim data-noescape>
+0o52     // => 42
+0b101010 // => 42
+            </code></pre>
+
+            <footer><a href="http://babeljs.io/docs/learn-es2015/#binary-and-octal-literals">Détails</a></footer>
+          </section>
+        </section> <!-- #greater-comfort -->
+
+        <section data-state="theme-color-asphalt-orange">
+          <section id="modules">
+            <h1>Des vrais modules</h1>
+            <h3>qui défoncent</h3>
+          </section>
+
+          <section id="better-modules">
+            <h2>Mieux que tous les autres</h2>
+
+            <pre><code class="js" data-trim data-noescape data-path="actions/todo.js (lignes 1–5)">
+<u>import * as types from '../constants/ActionTypes';</u>
+
+<u>export</u> function addTodo(text) {
+  return { type: types.ADD_TODO, text };
+}
+            </code></pre>
+
+            <pre><code class="js" data-trim data-noescape data-path="components/Footer.js (lignes 1–3, 73)">
+import <u>React, { PropTypes, Component }</u> from <u>'react'</u>;
+import <u>classnames</u> from 'classnames';
+import <u>{ SHOW_ALL, SHOW_COMPLETED, SHOW_ACTIVE }</u> from '../constants/TodoFilters';
+…
+<u>export default</u> Footer;
+            </code></pre>
+
+            <pre><code class="js" data-trim data-noescape data-path="constants/ActionTypes.js (lignes 1–3)">
+<u>export const</u> ADD_TODO = 'ADD_TODO';
+<u>export const</u> DELETE_TODO = 'DELETE_TODO';
+<u>export const</u> EDIT_TODO = 'EDIT_TODO';
+            </code></pre>
+
+            <footer>
+              <a href="http://babeljs.io/docs/learn-es2015/#modules">Détails</a> •
+              <a href="http://jsmodules.io">Comparaison CommonJS</a>
+            </footer>
+          </section>
+				</section> <!-- #modules -->
+
+        <section data-state="theme-color-mint-beige">
+          <section id="async">
+            <h1>L’asynchrone</h1>
+            <h3>en version triviale</h3>
+          </section>
+
+          <section id="promises">
+            <h2>Promesses</h2>
+
+            <pre><code class="js" data-trim data-noescape data-path="vu dans https://jakearchibald.com/2014/offline-cookbook/#cache-then-network">
+caches.match('/data.json')<u>.then</u>(function(response) {
+  if (!response) <u>throw</u> Error("No data");
+  <u>return</u> response.json();
+})<u>.then</u>(function(data) {
+  // don't overwrite newer network data
+  if (!networkDataReceived) {
+    updatePage(data);
+  }
+})<u>.catch</u>(function() {
+  // we didn't get cached data, the network is our last hope:
+  <u>return</u> networkUpdate;
+})<u>.catch</u>(showErrorMessage).then(stopSpinner);
+            </code></pre>
+
+            <p>Super manière de les apprivoiser : <a href="http://bevacqua.github.io/promisees/">Promisees</a></p>
+
+            <footer>
+              <a href="http://babeljs.io/docs/learn-es2015/#promises">Détails</a> •
+              <a href="http://www.html5rocks.com/fr/tutorials/es6/promises/">L’excellent tuto FR sur HTML5Rocks</a>
+            </footer>
+          </section>
+
+          <section id="async-functions">
+            <h2>Fonctions asynchrones</h2>
+
+            <script src="https://embed.tonicdev.com" data-element-id="async-fx-demo"></script>
+            <div id="async-fx-demo"><code data-trim>
+var Promise = require("bluebird");
+var R = require("ramda");
+
+async function forecastCities()
+{
+    var forecast = require("notebook")("tonic/forecast/1.0.0");
+    var promises = R.map(forecast.threeDay, arguments);
+
+    return R.zipObj(arguments, await Promise.map(promises, R.identity));
+}
+
+await forecastCities("New York", "San Francisco");
+            </code></div>
+
+            <pre style="display: none;"><code class="js" data-trim data-noescape>
+const Promise = require("bluebird");
+const R = require("ramda");
+
+<u>await</u> forecastCities("New York", "San Francisco");
+
+<u>async</u> function forecastCities()
+{
+    var forecast = require("notebook")("tonic/forecast/1.0.0");
+    var promises = R.map(forecast.threeDay, arguments);
+
+    return R.zipObj(arguments, <u>await</u> Promise.map(promises, R.identity));
+}
+            </code></pre>
+
+            <p>
+              <a href="https://tonicdev.com/tonic/city-forecast">Voir le résultat</a>
+              (et <a href="https://tonicdev.com/capicue/iss/4.0.0">d’autres encore plus fun</a>)
+            </p>
+
+            <footer>
+              <a href="https://github.com/tc39/ecmascript-asyncawait#readme">Détails</a> •
+              <a href="https://jakearchibald.com/2014/es7-async-functions/">Jake Archibald enfonce le clou</a> •
+              <a href="http://rossboucher.com/await/">Belle présentation de Ross Boucher</a>
+            </footer>
+          </section>
+        </section> <!-- #async -->
+
+        <section data-state="theme-color-blue-yellow">
+          <section id="experiments">
+            <h1>Encore plus fort</h1>
+            <h3>Avec les proxies et ES7</h3>
+          </section>
+
+          <section id="comprehensions">
+            <h2>Compréhensions</h2>
+
+            <pre><code class="js" data-trim data-noescape>
+let results = [
+  <u>for (c of customers)
+      if (c.city == "Seattle")
+        { name: c.name, age: c.age }</u>
+];
+            </code></pre>
+
+            <p>Pour comparaison, en CoffeeScript :</p>
+
+            <pre><code class="coffeescript" data-trim data-noescape>
+results = ({ name: c.name, age: c.age }
+  for c in customers when c.city is "Seattle")
+            </code></pre>
+
+            <footer><a href="http://babeljs.io/docs/advanced/transformers/other/comprehensions/">Détails</a></footer>
+          </section>
+
+          <section id="decorators">
+            <h2>Décorateurs</h2>
+
+            <pre><code class="js" data-trim data-noescape>
+class Meal {
+  <u>@readonly</u>
+  entree = 'Steak'
+
+  <u>@memoized('5 minutes')</u>
+  fullRun() {
+    // …
+  }
+}
+            </code></pre>
+
+            <footer>
+              <a href="https://github.com/wycats/javascript-decorators#readme">Détails</a> •
+              <a href="https://medium.com/google-developers/exploring-es7-decorators-76ecb65fb841">Super article</a>
+            </footer>
+          </section>
+
+          <section id="proxies">
+            <h2>Proxies</h2>
+
+            <pre><code class="js" data-trim data-noescape>
+function safeObj(obj) {
+  return new Proxy(obj, {
+    get(target, propKey, receiver) {
+      if (!(propKey in target)) {
+          throw new ReferenceError('Unknown property: ' + propKey);
+      }
+      return Reflect.get(target, propKey, receiver);
+    }
+  });
+}
+
+var o = safeObj({ first: 'Christopher', last: 'Colombus' });
+o.frist // => ReferenceError: Unknown property: frist
+            </code></pre>
+
+            <footer>
+              <a href="http://babeljs.io/docs/learn-es2015/#proxies">Détails</a> •
+              <a href="http://www.2ality.com/2014/12/es6-proxies.html#use_cases_for_proxies">Plein de super cas d’utilisation</a>
+            </footer>
+          </section>
+        </section> <!-- #experiments -->
+
+        <section data-state="theme-color-silver-green">
+          <section id="trainings">
+            <h2>Envie d’en savoir plus ?</h2>
+
+            <p>
+              On fait des <strong>super formations de ouf</strong> sur<br/>
+              <a href="http://www.git-attitude.fr/git-total/">Git</a>,
+              <a href="http://www.js-attitude.fr/js-total/">JavaScript et le dev web front</a> et
+              <a href="http://www.js-attitude.fr/node-js/">Node.js</a>.
+            </p>
+          </section>
+        </section>
+
+				<section>
+					<h1>Merci !</h1>
+          <h3>Et que JS soit avec vous</h3>
+          <br>
+					<p>Christophe Porteneuve</p>
+          <p><a href="https://twitter.com/porteneuve">@porteneuve</a></p>
+
+          <p class="breathing">Retrouvez les slides sur <a href="http://bit.ly/deep-dive-es6">bit.ly/deep-dive-es6</a></p>
+				</section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+        width: 980,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
